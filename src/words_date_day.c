@@ -1,7 +1,10 @@
+#include "pebble_os.h"
+#include "pebble_app.h"
 #include "pebble_fonts.h"
 #include "num2words.h"
 
-#define MY_UUID { 0xF6, 0x93, 0x61, 0x62, 0xCA, 0xC0, 0x40, 0xEC, 0xBB, 0x9B, 0x9C, 0xBA, 0x8F, 0x7B, 0xD4, 0xE6 }
+
+#define MY_UUID { 0xCA, 0x11, 0x5E, 0x93, 0x90, 0x02, 0x40, 0x3A, 0xA5, 0x1F, 0x1E, 0x12, 0x77, 0x7A, 0x42, 0x40 }
 #define TIME_SLOT_ANIMATION_DURATION 700
 #define NUM_LAYERS 4
 
@@ -13,7 +16,7 @@ enum layer_names {
 };
 
 PBL_APP_INFO(MY_UUID,
-             "Words + Date", "Daniel Hertz + James Hrisho",
+             "Words + Date + Day", "Marckus",  // based entirely on work from Daniel Hertz + James Hrisho - MSD 9-16-13
              1, 0, /* App version */
              RESOURCE_ID_IMAGE_MENU_ICON,
              APP_INFO_WATCH_FACE);
@@ -33,11 +36,7 @@ static struct CommonWordsData layers[NUM_LAYERS] =
 {{ .update = &fuzzy_sminutes_to_words },
  { .update = &fuzzy_minutes_to_words },
  { .update = &fuzzy_hours_to_words },
- { .update = &fuzzy_dates_to_words}};
-
-static GFont light;
-static GFont bold;
-static GFont small;
+ { .update = &fuzzy_dates_to_words, .buffer = "Xxxx Xxx 00" }};  // Uupdated .buffer for Day of Week addition - MSD 9-18-13
 
 void slide_out(PropertyAnimation *animation, CommonWordsData *layer) {
   GRect from_frame = layer_get_frame(&layer->label.layer);
@@ -115,28 +114,24 @@ void init_layer(CommonWordsData *layer, GRect rect, GFont font) {
 void handle_init(AppContextRef ctx) {
   (void)ctx;
 
-  window_init(&window, "Words + Date");
+  window_init(&window, "Words + Date + Day");  // added "+ Day" - MSD 9-16-13
   const bool animated = true;
   window_stack_push(&window, animated);
   window_set_background_color(&window, GColorBlack);
   resource_init_current_app(&APP_RESOURCES);
-  light = fonts_load_custom_font(resource_get_handle(
-                      RESOURCE_ID_FONT_ROBOTO_LIGHT_30));
-  bold = fonts_load_custom_font(resource_get_handle(
-                      RESOURCE_ID_FONT_ROBOTO_BOLD_SUBSET_40));
-  small = fonts_load_custom_font(resource_get_handle(
-                      RESOURCE_ID_FONT_ROBOTO_CONDENSED_21));
+
+// Changed all fonts below to updated 1.12 SDK fonts - MSD 9-16-13)
 // single digits
-  init_layer(&layers[MINUTES], GRect(0, 81, window.layer.frame.size.w, 35), light);
+  init_layer(&layers[MINUTES],GRect(0, 76, window.layer.frame.size.w, 50),fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
 
 // 00 minutes
-  init_layer(&layers[TENS], GRect(0, 46, window.layer.frame.size.w, 34), light);
+  init_layer(&layers[TENS], GRect(0, 38, window.layer.frame.size.w, 50),fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
 
 //hours
-  init_layer(&layers[HOURS], GRect(0, 0, window.layer.frame.size.w, 45), bold);
+  init_layer(&layers[HOURS], GRect(0, 0, window.layer.frame.size.w, 50),fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
 
-//Date
-  init_layer(&layers[DATE], GRect(0, 120, window.layer.frame.size.w, 48), small);
+//Date & Day of Week   (Changed font to Gothic 28 Bold to add Day of Week  and moved layer down a few pixels - MSD 9-16-13)
+  init_layer(&layers[3], GRect(0, 117, window.layer.frame.size.w, 50),fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
 
 //show your face
   PblTm t;
@@ -150,16 +145,11 @@ void handle_init(AppContextRef ctx) {
   }
 }
 
-void handle_deinit(AppContextRef ctx) {
-  fonts_unload_custom_font(light);
-  fonts_unload_custom_font(bold);
-  fonts_unload_custom_font(small);
-}
 
 void pbl_main(void *params) {
  PebbleAppHandlers handlers = {
     .init_handler = &handle_init,
-    .deinit_handler = &handle_deinit,
+
     .tick_info = {
       .tick_handler = &handle_minute_tick,
       .tick_units = MINUTE_UNIT
@@ -168,5 +158,3 @@ void pbl_main(void *params) {
   };
   app_event_loop(params, &handlers);
 }
-
-
