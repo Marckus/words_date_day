@@ -1,8 +1,8 @@
-words-date-pebble-watchface
-===========================
+words_date_day
+==============
 
-Words + Date pebble watch face
+Words + Date + Day pebble watch face
 
-A mix of the simplicity and text watchfaces for the pebble smart watch
+A mix of the simplicity and text watchfaces with the day of the week for the pebble smart watch
 
 ![screenshot](https://raw.github.com/securingsincity/words-date-pebble-watchface/master/screenshot.jpg "Screenshot")
