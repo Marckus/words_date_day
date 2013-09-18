@@ -43,10 +43,8 @@ static const char* STR_OH_CLOCK = "o'clock";
 static const char* STR_NOON = "noon";
 static const char* STR_MID = "mid";
 static const char* STR_NIGHT = "night";
-static const char* STR_TEEN = "teen";
-#if !DAY
 static const char* STR_OH = "oh";
-#endif
+static const char* STR_TEEN = "teen";
 
 static size_t append_number(char* words, int num) {
   int tens_val = num / 10;
@@ -91,15 +89,13 @@ void fuzzy_minutes_to_words(PblTm *t, char* words) {
   memset(words, 0, BUFFER_SIZE);
 
   //Is it midnight? or noon
-
   if (fuzzy_minutes != 0 || (fuzzy_hours != 12 && fuzzy_hours != 0)) {
     //is it the top of the hour?
     if(fuzzy_minutes == 0){
       remaining -= append_string(words, remaining, STR_OH_CLOCK);
-#if !DAY
-    } else if(fuzzy_minutes < 10){     //is it before ten minutes into the hour
+    } else if(fuzzy_minutes < 10){
+      //is it before ten minutes into the hour
       remaining -= append_string(words, remaining, STR_OH);
-#endif
     } else {
       remaining -= append_number(words, fuzzy_minutes);
     }
@@ -115,11 +111,7 @@ void fuzzy_sminutes_to_words(PblTm *t, char* words) {
   size_t remaining = BUFFER_SIZE;
   memset(words, 0, BUFFER_SIZE);
 
-#if DAY
-  if (fuzzy_minutes < 20) {
-#else
   if (10 < fuzzy_minutes && fuzzy_minutes < 20) {
-#endif
     if (fuzzy_minutes > 13 && 15 != fuzzy_minutes) {
         strcat(words, STR_TEEN);
       }
@@ -149,6 +141,8 @@ void fuzzy_hours_to_words(PblTm *t, char* words) {
   }
 }
 
+// updated this function to add space for the Day of Week - MSD 9-16-13
 void fuzzy_dates_to_words(PblTm *t, char* words) {
-  string_format_time(words, BUFFER_SIZE, DATE_FORMAT, t);
+
+  string_format_time(words, 12, DATE_FORMAT, t);  // change 7 to 12 - MSD 9-18-13
 }
